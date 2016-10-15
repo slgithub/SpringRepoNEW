@@ -1,41 +1,63 @@
 package com.springbootex;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import java.io.File;
 
-import java.util.UUID;
-
+import org.cassandraunit.spring.CassandraDataSet;
+import org.cassandraunit.spring.EmbeddedCassandra;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.runners.model.Statement;
 
-import com.springbootex.cass.model.Hotel;
-import com.springbootex.cass.repositories.HotelRepository;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.rule.OutputCapture;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestExecutionListeners.MergeMode;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SpringbootexApplication.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+
+@RunWith(SpringRunner.class)
+@TestExecutionListeners(mergeMode = MergeMode.MERGE_WITH_DEFAULTS, listeners = {OrderedCassandraTestExecutionListener.class })
+@SpringBootTest
+@CassandraDataSet(keyspace = "sample")
+@EmbeddedCassandra(timeout = 60000)
 public class SampleCassandraApplicationTest {
-	
-	@Autowired
-	private HotelRepository hotelRepository;
+
+	@ClassRule
+	public static OutputCapture outputCapture = new OutputCapture();
+
+	@ClassRule
+	public static SkipOnWindows skipOnWindows = new SkipOnWindows();
 
 	@Test
-	public void repositoryCrudOperations() {
-		Hotel sample = sampleHotel();
-		this.hotelRepository.save(sample);
-		Hotel savedHotel = this.hotelRepository.findOne(sample.getId());
-		assertThat(savedHotel.getName(), equalTo("Sample Hotel"));
-		this.hotelRepository.delete(savedHotel);
+	public void testDefaultSettings() throws Exception {
+		String output = SampleCassandraApplicationTest.outputCapture.toString();
+		assertThat(output).contains("firstName='Alice', lastName='Smith'");
 	}
 
-	private Hotel sampleHotel() {
-		Hotel hotel = new Hotel();
-		hotel.setId(UUID.randomUUID());
-		hotel.setName("Sample Hotel");
-		hotel.setAddress("Sample Address");
-		hotel.setZip("8764");
-		return hotel;
+	static class SkipOnWindows implements TestRule {
+
+		@Override
+		public Statement apply(final Statement base, Description description) {
+			return new Statement() {
+
+				@Override
+				public void evaluate() throws Throwable {
+					if (!runningOnWindows()) {
+						base.evaluate();
+					}
+				}
+
+				private boolean runningOnWindows() {
+					return File.separatorChar == '\\';
+				}
+
+			};
+		}
+
 	}
 }
