@@ -6,3 +6,58 @@ CREATE TABLE IF NOT EXISTS  sample.hotels (
     version int,
     primary key((id))
 );
+=============================================================
+describe keyspaces;
+use system;
+describe tables;
+describe table emp;
+
+=================================
+DROP KEYSPACE example;
+CREATE KEYSPACE example WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
+USE example;
+
+CREATE TABLE IF NOT EXISTS test_by_score (
+    commit blob, -- blob representing the commit hash
+    delta int, -- how much the scores have changed
+    score int, -- the test score, which is determined by the client
+    test blob, -- blob for the test
+    PRIMARY KEY(commit, delta, test)
+);
+
+insert into test_by_score  (commit, delta, test, score) values 
+  (textAsBlob('bdb14fbe076f6b94444c660e36a400151f26fc6f'), 0, textAsBlob('{"prefix": "enwiki", "title": "\"Aghnadarragh\""}'), 100
+);
+
+INSERT INTO test_by_score (commit, delta, test, score) VALUES (
+  textAsBlob('cdb14fbe076f6b94444c660e36a400151f26fc6f'), 0, textAsBlob('{"prefix": "enwiki", "title": "\"Aghnadarragh\""}'), 100
+);
+
+insert into test_by_score (commit, delta, test, score) values (
+  textAsBlob('adb14fbe076f6b94444c660e36a400151f26fc6f'), 0, textAsBlob('{"prefix": "enwiki", "title": "\"Aghnadarragh\""}'), 100
+);
+
+select * from example.test_by_score 
+
+
+CREATE TABLE IF NOT EXISTS image_by_store (
+    imgnameid blob, 
+    storeID int, 
+    cameraID int,
+    imagePath blob,
+	imagedata blob,
+    PRIMARY KEY(imgnameid, storeID, cameraID)
+);
+===================================================================================================
+# Stop services
+/etc/init.d/cassandra stop
+/etc/init.d/dse stop
+/etc/init.d/opscenter-agent stop
+========================================================
+apt-get remove cassandra
+
+--- removing the cassandra directories
+
+rm -rf /var/lib/cassandra
+rm -rf /var/log/cassandra
+rm -rf /etc/cassandra
