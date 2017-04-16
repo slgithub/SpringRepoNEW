@@ -21,7 +21,7 @@ public class SpringKafkaExampleApplication {
 	@PostConstruct
 	public void init(){
 		for(int i=0;i<=20;i++){
-			kafkaTemplate.send("kafkatest",String.valueOf(i%2), "ABC"+i);
+			kafkaTemplate.send("kafkatest",i%3,"ABC"+i);
 			System.out.println("kafkaTemplate---"+i);
 		}
 		
