@@ -40,6 +40,7 @@
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
+			<version>1.0.0.RELEASE</version> <!-- changed due lower version of the kafka server -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

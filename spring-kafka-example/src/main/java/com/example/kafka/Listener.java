@@ -14,5 +14,11 @@ public class Listener {
 		System.out.println(record);
 		countDownLatch1.countDown();
 	}
+	
+	@KafkaListener(id = "foo2", topics = "kafkatest", group = "group2")
+	public void listenM(ConsumerRecord<?, ?> record) {
+		System.out.println(record);
+		countDownLatch1.countDown();
+	}
 
 }
